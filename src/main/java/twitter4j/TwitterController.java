@@ -25,6 +25,7 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
+import twitter4j.MongoDB;
 
 public class TwitterController {
 	private Twitter twitter;
@@ -33,6 +34,7 @@ public class TwitterController {
     private List<Status> statuses;
 
 	public TwitterController(PrintStream console) {
+		MongoDB.mostrar();
 		twitter = TwitterFactory.getSingleton();
 		consolePrint = console;
         statuses = new ArrayList<Status>();
@@ -72,5 +74,5 @@ public class TwitterController {
 	public void reply(StatusUpdate status) throws TwitterException {
 		twitter.updateStatus(status);
 	}
-	
+
 }
