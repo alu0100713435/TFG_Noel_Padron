@@ -10,13 +10,19 @@ import twitter4j.QueryReader;
 import twitter4j.Status;
 import twitter4j.TwitterException;
 
+import twitter4j.Freeling4;
+
+import edu.upc.Jfreeling.*;
+
 public class TwitterMain {
 	
 	private static PrintStream consolePrint;
 	
 	public static void main(String[] args) throws IOException, TwitterException {
 
-		try {
+		Freeling4.mostrar_freeling();
+
+		/*try {
             // gets Twitter instance with default credentials
 			Twitter twitter = new TwitterFactory().getInstance();
 			TwitterController twittear = new TwitterController(consolePrint); //Objeto de la clase TwitterController
@@ -31,7 +37,7 @@ public class TwitterMain {
             te.printStackTrace();
             System.out.println("Failed to get timeline: " + te.getMessage());
             System.exit(-1);
-        }
+        }*/
 
 		
 		/* TwitterController twittear = new TwitterController(consolePrint); //Objeto de la clase TwitterController
