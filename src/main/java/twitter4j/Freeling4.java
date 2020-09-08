@@ -95,6 +95,7 @@ public class Freeling4 {
     // Make sure the encoding matches your input text (utf-8, iso-8859-15, ...)
     BufferedReader input = new BufferedReader(
       new InputStreamReader( System.in, "utf-8" ) );
+    System.out.println("Cadena de texto: ");
     String line = input.readLine();
 
     // Identify language of the text.  

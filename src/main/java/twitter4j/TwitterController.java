@@ -34,7 +34,7 @@ public class TwitterController {
     private List<Status> statuses;
 
 	public TwitterController(PrintStream console) {
-		MongoDB.mostrar();
+		//MongoDB.mostrar();
 		twitter = TwitterFactory.getSingleton();
 		consolePrint = console;
         statuses = new ArrayList<Status>();
