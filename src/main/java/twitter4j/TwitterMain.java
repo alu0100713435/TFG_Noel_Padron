@@ -84,7 +84,7 @@ public class TwitterMain {
 		}
 		
 		/* TwitterController twittear = new TwitterController(consolePrint); //Objeto de la clase TwitterController
-		String message = "Como andamios"; //Texto del tweet
+		String message = "Prueba"; //Texto del tweet
 		long inReplyToStatusId; //Variable en la que ira el id del tweet a responder
 		String command = QueryReader.readLine("Query in twitter (quit for exit)->>"); //Palabra a analizar
 		while (!command.equals("quit")) {			
@@ -98,13 +98,13 @@ public class TwitterMain {
 				twittear.reply(stat);
 			}
 			twittear.printStatus(result);
-			twittear.tweetOut(message);
+			//twittear.tweetOut(message);
 			command = QueryReader.readLine("Query in twitter: ");
 		} */
 		
 	}
 	public static String analisis_freeling(String contenido) throws IOException{
-		String ruta = "ejemplo.txt";
+		String ruta = "analizar.txt";
 		File file = new File(ruta);
 		// Si el archivo no existe es creado
 		if (!file.exists()) {

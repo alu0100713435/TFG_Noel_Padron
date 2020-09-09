@@ -1,3 +1,3 @@
 #!/bin/bash
 
-analyze -f es.cfg <ejemplo.txt
+analyze -f es.cfg <analizar.txt
