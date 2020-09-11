@@ -14,6 +14,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 
 import org.bson.Document;
+import org.junit.Test;
+
 import java.util.Arrays;
 import com.mongodb.Block;
 
@@ -22,6 +24,8 @@ import com.mongodb.client.FindIterable;
 import static com.mongodb.client.model.Filters.*;
 import com.mongodb.client.result.DeleteResult;
 import static com.mongodb.client.model.Updates.*;
+import static org.junit.Assert.assertEquals;
+
 import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +51,7 @@ public class TwitterMain {
 	private static PrintStream consolePrint;
 	
 	public static void main(String[] args) throws IOException, TwitterException {
-		// MongoDB.base_datos("prueba");
+		// MongoDB.base_datos();
 		MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
 		
@@ -56,9 +60,8 @@ public class TwitterMain {
 		
 		String contenido = "";
 		String message = "";
-		
 		long inReplyToStatusId;
-		List<String> ejemploLista = new ArrayList<String>();
+
 		try {
 			// gets Twitter instance with default credentials
 			Twitter twitter = new TwitterFactory().getInstance();
@@ -67,9 +70,8 @@ public class TwitterMain {
             List<Status> statuses = twitter.getHomeTimeline();
             for (Status status : statuses) {
 				contenido = status.getText();
-				ejemploLista.add(contenido);
 				if(analisis_freeling(contenido) != ""){
-					message = basedatos(analisis_freeling(contenido), collection) + " @" + status.getUser().getScreenName();
+					message = consulta_base_datos(analisis_freeling(contenido), collection) + " @" + status.getUser().getScreenName();
 					inReplyToStatusId = status.getId();
 					StatusUpdate stat= new StatusUpdate(message);
 					stat.setInReplyToStatusId(inReplyToStatusId);
@@ -97,7 +99,7 @@ public class TwitterMain {
 				stat.setInReplyToStatusId(inReplyToStatusId);
 				twittear.reply(stat);
 			}
-			twittear.printStatus(result);
+			//twittear.printStatus(result);
 			//twittear.tweetOut(message);
 			command = QueryReader.readLine("Query in twitter: ");
 		} */
@@ -138,7 +140,7 @@ public class TwitterMain {
 		return "";
 	}
 
-	public static String basedatos(String name, MongoCollection<Document> collection){
+	public static String consulta_base_datos(String name, MongoCollection<Document> collection){
 
 		FindIterable<Document> resultDocument = collection.find(new Document("name", name));
 		String respuesta = "";
@@ -149,5 +151,10 @@ public class TwitterMain {
 			}
 		return respuesta;
 	}
+
+	@Test
+	public void twitter_test() throws IOException {
+        assertEquals("tenerife", analisis_freeling("tenerife"));
+    }
 
 }
