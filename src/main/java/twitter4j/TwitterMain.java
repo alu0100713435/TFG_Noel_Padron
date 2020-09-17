@@ -51,7 +51,7 @@ public class TwitterMain {
 	private static PrintStream consolePrint;
 	
 	public static void main(String[] args) throws IOException, TwitterException {
-		// MongoDB.base_datos();
+		// MongoDB.base_datos(false);
 		MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
 		
@@ -60,6 +60,8 @@ public class TwitterMain {
 		
 		String contenido = "";
 		String message = "";
+		String response_bd = "";
+		String response_freeling = "";
 		long inReplyToStatusId;
 
 		try {
@@ -70,12 +72,18 @@ public class TwitterMain {
             List<Status> statuses = twitter.getHomeTimeline();
             for (Status status : statuses) {
 				contenido = status.getText();
-				if(analisis_freeling(contenido) != ""){
-					message = consulta_base_datos(analisis_freeling(contenido), collection) + " @" + status.getUser().getScreenName();
-					inReplyToStatusId = status.getId();
-					StatusUpdate stat= new StatusUpdate(message);
-					stat.setInReplyToStatusId(inReplyToStatusId);
-					twittear.reply(stat);
+				response_freeling = analisis_freeling(contenido);
+				if(response_freeling != ""){
+					response_bd = consulta_base_datos(response_freeling, collection);
+					if(response_bd != ""){
+						message = response_bd + " @" + status.getUser().getScreenName();
+						System.out.println(message);
+						inReplyToStatusId = status.getId();
+						
+						StatusUpdate stat= new StatusUpdate(message);
+						stat.setInReplyToStatusId(inReplyToStatusId);
+						twittear.reply(stat);
+					}
 				}
 			}
 			//twittear.printStatus(statuses); //Muestra todos los tweets que ha almacenado del TimeLine con el formato que tiene en la definicion de la funcion
@@ -97,7 +105,7 @@ public class TwitterMain {
 				System.out.println(tweet.getUser().getScreenName());
 				StatusUpdate stat= new StatusUpdate(message);
 				stat.setInReplyToStatusId(inReplyToStatusId);
-				twittear.reply(stat);
+				//twittear.reply(stat);
 			}
 			//twittear.printStatus(result);
 			//twittear.tweetOut(message);
@@ -151,10 +159,5 @@ public class TwitterMain {
 			}
 		return respuesta;
 	}
-
-	@Test
-	public void twitter_test() throws IOException {
-        assertEquals("tenerife", analisis_freeling("tenerife"));
-    }
 
 }

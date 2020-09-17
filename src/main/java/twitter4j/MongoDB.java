@@ -19,7 +19,7 @@ import com.mongodb.client.result.UpdateResult;
 import java.util.ArrayList;
 import java.util.List;
 public class MongoDB {
-    public static void base_datos() {
+    public static MongoCollection<Document> base_datos(boolean insertar) {
         Block<Document> printBlock = new Block<Document>() {
             @Override
             public void apply(final Document document) {
@@ -31,13 +31,16 @@ public class MongoDB {
 
         MongoDatabase database = mongoClient.getDatabase("twitter");
         MongoCollection<Document> collection = database.getCollection("newCollection1");
+        if(insertar == true){
+            Document doc = new Document("name", "proservic")
+                                .append("keywords", new Document("keyword1", "servicios")
+                                                        .append("keyword2", "sociales"))
+                                .append("description", "Echale un vistazo a esta noticia! ")
+                                .append("link", "http://www.n2bsolutions.com/es/blog/01/");
+            collection.insertOne(doc);
+        }
 
-        Document doc = new Document("name", "proservic")
-                            .append("keywords", new Document("keyword1", "servicios")
-                                                    .append("keyword2", "sociales"))
-                            .append("description", "Echale un vistazo a esta noticia! ")
-                            .append("link", "http://www.n2bsolutions.com/es/blog/01/");
-        collection.insertOne(doc);
+        return collection;
         // collection.find(new Document()).forEach(printBlock);
     }
     
