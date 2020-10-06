@@ -51,18 +51,22 @@ public class TwitterMain {
 	private static PrintStream consolePrint;
 	
 	public static void main(String[] args) throws IOException, TwitterException {
-		// MongoDB.base_datos(false);
+
+		// MongoDB.base_datos();
+		
+		System.out.println("==================================================");
+		System.out.println("Conexión a la base de datos: ");
 		MongoClientURI connectionString = new MongoClientURI("mongodb://localhost:27017");
         MongoClient mongoClient = new MongoClient(connectionString);
 		
         MongoDatabase database = mongoClient.getDatabase("twitter");
 		MongoCollection<Document> collection = database.getCollection("newCollection1");
 		
-		String contenido = "";
-		String message = "";
-		String response_bd = "";
-		String response_freeling = "";
-		long inReplyToStatusId;
+		String contenido = ""; // El texto de cada Tweet
+		String response_bd = ""; // La respuesta de la base de datos
+		String message = ""; // El contenido del tweet de la respuesta
+		ArrayList<String> response_freeling = new ArrayList<String>(); // Lista de palabras de freeling
+		long inReplyToStatusId; // ID del tweet a responder
 
 		try {
 			// gets Twitter instance with default credentials
@@ -71,20 +75,33 @@ public class TwitterMain {
             User user = twitter.verifyCredentials();
             List<Status> statuses = twitter.getHomeTimeline();
             for (Status status : statuses) {
+				System.out.println("==================================================");
+				System.out.println("Tweet: ");
+				twittear.printStatus(status);
+				System.out.println("==================================================");
 				contenido = status.getText();
 				response_freeling = analisis_freeling(contenido);
-				if(response_freeling != ""){
-					response_bd = consulta_base_datos(response_freeling, collection);
-					if(response_bd != ""){
-						message = response_bd + " @" + status.getUser().getScreenName();
-						System.out.println(message);
-						inReplyToStatusId = status.getId();
-						
-						StatusUpdate stat= new StatusUpdate(message);
-						stat.setInReplyToStatusId(inReplyToStatusId);
-						twittear.reply(stat);
+				for(String palabra : response_freeling){
+					if(palabra != ""){
+						response_bd = consulta_base_datos(palabra, collection);
+						if(response_bd != ""){
+							message = response_bd + " @" + status.getUser().getScreenName();
+							System.out.println("==================================================");
+							System.out.println("Respuesta al tweet: ");
+							System.out.println(message);
+							System.out.println("==================================================");
+							inReplyToStatusId = status.getId();
+							
+							StatusUpdate stat= new StatusUpdate(message);
+							stat.setInReplyToStatusId(inReplyToStatusId);
+							twittear.reply(stat);
+						}
+						else{
+							System.out.println("No hay coincidencias con la palabra: '" + palabra + "' en la base de datos.");
+						}
 					}
 				}
+				System.out.println("==================================================");
 			}
 			//twittear.printStatus(statuses); //Muestra todos los tweets que ha almacenado del TimeLine con el formato que tiene en la definicion de la funcion
         } catch (TwitterException te) {
@@ -93,27 +110,11 @@ public class TwitterMain {
             System.exit(-1);
 		}
 		
-		/* TwitterController twittear = new TwitterController(consolePrint); //Objeto de la clase TwitterController
-		String message = "Prueba"; //Texto del tweet
-		long inReplyToStatusId; //Variable en la que ira el id del tweet a responder
-		String command = QueryReader.readLine("Query in twitter (quit for exit)->>"); //Palabra a analizar
-		while (!command.equals("quit")) {			
-			List<Status> result = twittear.query(command); //Funcion de la clase TwitterController para almacenar los tweets que coincidan
-			for (Status tweet : result) {				
-				inReplyToStatusId = tweet.getId();
-				message = message + " @" + tweet.getUser().getScreenName();
-				System.out.println(tweet.getUser().getScreenName());
-				StatusUpdate stat= new StatusUpdate(message);
-				stat.setInReplyToStatusId(inReplyToStatusId);
-				//twittear.reply(stat);
-			}
-			//twittear.printStatus(result);
-			//twittear.tweetOut(message);
-			command = QueryReader.readLine("Query in twitter: ");
-		} */
+		// prueba_twitter();
 		
 	}
-	public static String analisis_freeling(String contenido) throws IOException{
+
+	public static ArrayList<String> analisis_freeling(String contenido) throws IOException{
 		String ruta = "analizar.txt";
 		File file = new File(ruta);
 		// Si el archivo no existe es creado
@@ -135,29 +136,56 @@ public class TwitterMain {
 		while((line = reader.readLine()) != null) {
 			analisis.add(line);
 		}
+		ArrayList<String> palabras = new ArrayList<String>();
+
 		for(int i=0 ; i<analisis.size(); i++){
 			String[] parts = analisis.get(i).split(" ");
 			for(int j=0; j<parts.length-1; j++){
 				if(parts[j].charAt(0) == 'N' && (j-1) > 0){
-					System.out.println(parts[j-1]);
-					return parts[j-1];
+					if((i == 0) && parts[j-1].equals("rt")){
+						System.out.println("No se puede analizar un tweet de un retweet.");
+						return palabras;
+					}
+					else{
+						palabras.add(parts[j-1]);
+						System.out.println("Palabra a analizar: '" + parts[j-1] + "'.");
+					}
 				}
 			}
 		}
 		analisis.remove((analisis.size()-1));
-		return "";
+		return palabras;
 	}
 
 	public static String consulta_base_datos(String name, MongoCollection<Document> collection){
 
 		FindIterable<Document> resultDocument = collection.find(new Document("name", name));
 		String respuesta = "";
-		if (resultDocument != null)
-			for(Document doc : resultDocument){
-				respuesta = doc.getString("description") + doc.getString("link");
-				// System.out.println(respuesta);
-			}
+		if (resultDocument.first() != null){
+			respuesta = resultDocument.first().getString("description") + resultDocument.first().getString("link");
+		}
 		return respuesta;
+	}
+
+	public static void prueba_twitter() throws TwitterException, IOException {
+		TwitterController twittear = new TwitterController(consolePrint); //Objeto de la clase TwitterController
+		String message = "Prueba"; //Texto del tweet
+		long inReplyToStatusId; //Variable en la que ira el id del tweet a responder
+		String command = QueryReader.readLine("Query in twitter (quit for exit)->>"); //Palabra a analizar
+		while (!command.equals("quit")) {			
+			List<Status> result = twittear.query(command); //Funcion de la clase TwitterController para almacenar los tweets que coincidan
+			for (Status tweet : result) {				
+				inReplyToStatusId = tweet.getId();
+				message = message + " @" + tweet.getUser().getScreenName();
+				System.out.println(tweet.getUser().getScreenName());
+				StatusUpdate stat= new StatusUpdate(message);
+				stat.setInReplyToStatusId(inReplyToStatusId);
+				twittear.reply(stat);
+			}
+			//twittear.printStatus(result);
+			//twittear.tweetOut(message);
+			command = QueryReader.readLine("Query in twitter: ");
+		}
 	}
 
 }
